@@ -2,18 +2,70 @@ import numpy as np
 import cv2
 import sys
 import glob
-from operator import itemgetter
+from operator import attrgetter
 import math
 
-def dot(a,b):
+def dot(a,b):#a.b
 	return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]
-def vecsub(a,b):
+def vecsub(a,b):#a-b
 	return [a[0]-b[0],a[1]-b[1],a[2]-b[2]]
-def distance(a):
+def vecadd(a,b): #a+b
+	return [a[0]+b[0],a[1]+b[1],a[2]+b[2]]
+def distance(a): #magnitude a
 	return math.sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2])
-def scalarmult(a,b):
+def scalarmult(a,b): #Multiply vector a by number b
 	return([a[0]*b,a[1]*b,a[2]*b])
+def sign(a,b): #Are a and b in the same direction or opposite?
+	return(dot(a,b)/abs(dot(a,b)))
+def vectordiv(a,b):
+	return((a[0]/b[0]+a[1]/b[1]+a[2]/b[2])/3)
+def cross(a,b): #a cross b
+	return([a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]])
+def proj(a,b): #Projection of b onto unit vector a
+	return(scalarmult(a,dot(a,b)/(distance(a)*distance(a))))
 
+class gridSquare:
+	camvec=[] #Vector pointing to camera, in camera coords
+	side1=[] #Unit vector from center to side1 of square, in camera coords
+	side2=[] #Unit vector from center to side1 of square, in camera coords
+	normal=[] #Normal vector pointing out of the square	
+
+	score=0 #How good is this square. See compare square normals for more
+	corners=[] #Image coordinates of square corners
+	contour=None #Unsimplified image coordinates of square corners
+	location=[] #Square location in camera coordinates
+	def getPosStats(self):
+		tempcorners=self.corners.reshape(4,2,1).astype(float) #The points need to be floats, and in a specific shape
+		inliers,rvec,tvec=cv2.solvePnP(objectpoints,tempcorners,CameraMatrix,distortionCoefficients) #Where the magic happens. Turns gets vector from camera to center of square
+		inliers,rvec2,tvec2=cv2.solvePnP(secondObjectCorners,tempcorners,CameraMatrix,distortionCoefficients)
+		inliers,rvec3,tvec3=cv2.solvePnP(thirdObjectCorners,tempcorners,CameraMatrix,distortionCoefficients)
+		#print(distance(vecsub(tvec2,tvec)),distance(vecsub(tvec3,tvec)))
+		line1=scalarmult(vecsub(tvec2,tvec),1/distance(vecsub(tvec2,tvec)))
+		line2=scalarmult(vecsub(tvec3,tvec),1/distance(vecsub(tvec3,tvec)))
+		self.camvec=[float(tvec[0]),float(tvec[1]),float(tvec[2])]
+		self.side1=[float(line1[0]),float(line1[1]),float(line1[2])]
+		self.side2=[float(line2[0]),float(line2[1]),float(line2[2])]
+		self.normal=cross(self.side1,self.side2)
+		tempx=proj(self.side1,self.camvec)
+		tempy=proj(self.side2,self.camvec)
+		tempz=proj(self.normal,self.camvec)
+		self.location=[sign(tempx,self.side1)*distance(tempx),sign(tempy,self.side2)*distance(tempy),sign(tempz,self.normal)*distance(tempz)]
+		#self.location[0]=sign(temp,self.side1)*distance(temp)
+
+#		self.location[1]=sign(temp,self.side2)*distance(temp)
+#		self.location[2]=sign(temp,self.normal)*distance(temp)
+	def compareSquareNormals(self,square):
+		tempcross=cross(self.normal,square.normal)
+		edge=0
+		for point in square.corners:
+			if(point[0][0]==0 or point[0][0]==len(img[0])-1 or point[0][1]==0 or point[0][1]==len(img)-1):
+				edge=1
+		if(not edge):
+			#score+=abs(dot(cross1,cross2))
+			self.score+=1-abs(distance(tempcross)/(distance(square.normal)*distance(self.normal)))
+	def __init__(self,contour):
+		self.contour=contour
+		
 squarelength=28.5 #Needs to be a float, in cm of real length of the squares
 objectpoints=np.array([[[-squarelength/2,-squarelength/2,0]],[[-squarelength/2,squarelength/2,0]],[[squarelength/2,squarelength/2,0]],[[squarelength/2,-squarelength/2,0]]],np.float32) #3d grid square coordinates
 secondObjectCorners=np.array([[[-squarelength/2,0,0]],[[-squarelength/2,squarelength,0]],[[squarelength/2,squarelength,0]],[[squarelength/2,0,0]]],np.float32)
@@ -70,80 +122,52 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 	contour=0 #Iterator
 	squares=[] #List of squares to add to.
 	while(contour<len(contours) and cv2.contourArea(contours[contour])>100): #Loop until area is too small or all are done
+		newsquare=gridSquare(contours[contour])
 		#print cv2.contourArea(contours[contour])
-		epsilon = 0.01*cv2.arcLength(contours[contour],True) #Set up for simplifying contours
-		contours[contour]=cv2.approxPolyDP(contours[contour],epsilon,True) #Actually simplifying
+		epsilon = 0.01*cv2.arcLength(newsquare.contour,True) #Set up for simplifying contours
+		newsquare.corners=cv2.approxPolyDP(newsquare.contour,epsilon,True) #Actually simplifying
 		
-		if(len(contours[contour])==4): #If the simplified version has 4 sides
-			cv2.polylines(img,[contours[contour]],True,(0,255,0)) #Draw it
-			squares.append(contours[contour]) #And mark it as a square
+		if(len(newsquare.corners)==4): #If the simplified version has 4 sides
+			cv2.polylines(img,[newsquare.contour],True,(0,255,0)) #Draw it
+			squares.append(newsquare) #And mark it as a square
 		contour+=1 #Iterate
 	#print(contour,len(squares)) #Print the # of squares found
 	#print(len(img),len(img[0]))
-	tvecs=[] #Initialize list for output vectors from camera to center of square
 	for square in squares:
-		square=square.reshape(4,2,1).astype(float) #The points need to be floats, and in a specific shape
-		inliers,rvec,tvec=cv2.solvePnP(objectpoints,square,CameraMatrix,distortionCoefficients) #Where the magic happens. Turns gets vector from camera to center of square
-		inliers,rvec2,tvec2=cv2.solvePnP(secondObjectCorners,square,CameraMatrix,distortionCoefficients)
-		inliers,rvec3,tvec3=cv2.solvePnP(thirdObjectCorners,square,CameraMatrix,distortionCoefficients)
-		#print(distance(vecsub(tvec2,tvec)),distance(vecsub(tvec3,tvec)))
-		line1=vecsub(tvec2,tvec)
-		line1=scalarmult(line1,1/distance(line1))
-		line2=vecsub(tvec3,tvec)
-		line2=scalarmult(line2,1/distance(line2))
-		tvecs.append([float(tvec[0]),float(tvec[1]),float(tvec[2]),float(line1[0]),float(line1[1]),float(line1[2]),float(line2[0]),float(line2[1]),float(line2[2])]) #Add vector to list
-
+		square.getPosStats()
 	index1=0 #Iterator1
 	#print("")
-	while(index1<len(tvecs)): #Loop through tvecs
+	while(index1<len(squares)): #Loop through squares
 		index2=0 #Iterator2 starts where 1 hasn't reached
 		score=0
-		while(index2<len(tvecs)): #And loops through tvecs
-
-			tvec=tvecs[index1] #Iterators are indices for tvecs. Get the tvecs from them
-			tvec2=tvecs[index2]
-			cross1=[tvec[4]*tvec[8]-tvec[5]*tvec[7],tvec[5]*tvec[6]-tvec[3]*tvec[8],tvec[3]*tvec[7]-tvec[4]*tvec[6]]
-			cross2=[tvec2[4]*tvec2[8]-tvec2[5]*tvec2[7],tvec2[5]*tvec2[6]-tvec2[3]*tvec2[8],tvec2[3]*tvec2[7]-tvec2[4]*tvec2[6]]
-			cross3=[cross1[1]*cross2[2]-cross1[2]*cross2[1],cross1[2]*cross2[0]-cross1[0]*cross2[2],cross1[0]*cross2[1]-cross1[1]*cross2[0]]
-
-			
-			edge=0
-			for point in squares[index2]:
-				if(point[0][0]==0 or point[0][0]==len(img[0])-1 or point[0][1]==0 or point[0][1]==len(img)-1):
-					edge=1
-			if(not edge):
-				#score+=abs(dot(cross1,cross2))
-				score+=1-abs(distance(cross3)/(distance(cross2)*distance(cross1)))
-			#score=distance(vecsub(tvec[:3],tvec2[:3]))/30.5 #Find the distance between the grid square centers in units of 30.5 cm
-			#print(dot(vecsub(tvec[:3],tvec2[:3]),tvec[3:6]),dot(vecsub(tvec[:3],tvec2[:3]),tvec[6:]),dot(vecsub(tvec2[:3],tvec[:3]),tvec2[3:6]),dot(vecsub(tvec2[:3],tvec[:3]),tvec2[6:]),score)
-			
+		while(index2<len(squares)): #And loops through squares
+			squares[index1].compareSquareNormals(squares[index2])
 			index2+=1 #Iterate
-		tvecs[index1].append(score)
-		tvecs[index1].append([squares[index1]])
 		index1+=1 #Iterate
-	tvecs.sort(key=itemgetter(9),reverse=True)
-	if(len(tvecs)>0):
+	squares.sort(key=attrgetter('score'),reverse=True)
+	if(len(squares)>0):
 		averageheight=0
-		scorethreshold=.95*tvecs[0][9]
+		scorethreshold=.95*squares[0].score
 		tvecindex=0
-		while(tvecs[tvecindex][9]>scorethreshold and tvecindex<len(tvecs)-1):
-			thing=tvecs[tvecindex]
-			cross=[thing[4]*thing[8]-thing[5]*thing[7],thing[5]*thing[6]-thing[3]*thing[8],thing[3]*thing[7]-thing[4]*thing[6]]
-			height=abs(dot(thing[:3],cross)/distance(cross))
+		for square in [square for square in squares if square.score > scorethreshold]:
+
+			print(square.location)
+			height=abs(square.location[2])
+			#height=abs(dot(square.camvec,square.normal)/distance(square.normal))
 			averageheight+=height
-			#print dot(vecsub(tvec[:3],tvec2[:3]),tvec[3:6]),dot(vecsub(tvec[:3],tvec2[:3]),tvec[6:]),dot(vecsub(tvec2[:3],tvec[:3]),tvec2[3:6]),dot(vecsub(tvec2[:3],tvec[:3]),tvec2[6:]),score
-			#print(thing[9]) #print it
 			x=0
 			y=0
-			for point in thing[10][0]:
+			for point in square.corners:
 				x+=point[0][0]
 				y+=point[0][1]
-			x=x/4
-			y=y/4
-			cv2.putText(img,str(int(height))+" "+str(int(thing[9]*100)),(x,y), font, 1,(255,255,255),1,cv2.LINE_AA)
+			x=int(x/4)
+			y=int(y/4)
+			cv2.putText(img,str(int(height))+" "+str(int(square.score*100)),(x,y), font, 1,(255,255,255),1,cv2.LINE_AA)
 	
-			cv2.polylines(img,thing[10],True,(255,0,0)) #Draw both squares
+			cv2.polylines(img,[square.corners],True,(255,0,0)) #Draw both squares
 			tvecindex+=1
+		#print(len([square for square in squares if square.score > scorethreshold]))
+
 		if(tvecindex!=0):
 			averageheight=averageheight/tvecindex
 			heights[0]=[averageheight,scorethreshold/.95]
@@ -152,7 +176,7 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 			cv2.putText(img,"N/A",(30,30), font, 1,(255,255,255),1,cv2.LINE_AA)
 	else:
 		cv2.putText(img,"N/A",(30,30), font, 1,(255,255,255),1,cv2.LINE_AA)
-	#print("") #Divider line
+	print("") #Divider line
 	weights=[.5,.3,.2]
 	totalscore=weights[0]*heights[0][1]+weights[1]*heights[1][1]+weights[2]*heights[2][1]
 	if(totalscore!=0):
