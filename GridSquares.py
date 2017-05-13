@@ -123,7 +123,7 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 	except:
 		#exit=1 #If that's not working, your screwed. Just give up now.
 		pass
-	dump,contours,hierarchy=cv2.findContours(ret,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE) #Get contours in image in a list.
+	contours,hierarchy=cv2.findContours(ret,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE) #Get contours in image in a list.
 	contours.sort(key=cv2.contourArea,reverse=True) #Sort them by area. Trust me. Saves time because there are a ton of contours with 0 area.
 	contour=0 #Iterator
 	squares=[] #List of squares to add to.
@@ -174,7 +174,7 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 				y+=point[0][1]
 			x=int(x/4)
 			y=int(y/4)
-			cv2.putText(img,str(int(height))+" "+str(int(square.score*100)),(x,y), font, 1,(255,255,255),1,cv2.LINE_AA)
+			cv2.putText(img,str(int(height))+" "+str(int(square.score*100)),(x,y), font, 1,(255,255,255),1,cv2.CV_AA)
 	
 			#cv2.polylines(img,[square.corners],True,(255,0,0)) #Draw both squares
 			tvecindex+=1
@@ -183,18 +183,18 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 		if(tvecindex!=0):
 			averageheight=averageheight/tvecindex
 			heights[0]=[averageheight,scorethreshold/.95]
-			#cv2.putText(img,str(int(averageheight)),(30,30), font, 1,(255,255,255),1,cv2.LINE_AA)
+			#cv2.putText(img,str(int(averageheight)),(30,30), font, 1,(255,255,255),1,cv2.CV_AA)
 		else:
 			pass
-			#cv2.putText(img,"N/A",(30,30), font, 1,(255,255,255),1,cv2.LINE_AA)
+			#cv2.putText(img,"N/A",(30,30), font, 1,(255,255,255),1,cv2.CV_AA)
 	else:
-		cv2.putText(img,"N/A",(30,30), font, 1,(255,255,255),1,cv2.LINE_AA)
+		cv2.putText(img,"N/A",(30,30), font, 1,(255,255,255),1,cv2.CV_AA)
 	print("") #Divider line
 	weights=[.5,.3,.2]
 	totalscore=weights[0]*heights[0][1]+weights[1]*heights[1][1]+weights[2]*heights[2][1]
 	if(totalscore!=0):
 		heights[0]=[(weights[0]*heights[0][1]*heights[0][0]+weights[1]*heights[1][1]*heights[1][0]+weights[2]*heights[2][1]*heights[2][0])/totalscore,totalscore]
-		#cv2.putText(img,str(int(heights[0][0])),(60,60), font, 1,(255,255,255),1,cv2.LINE_AA)
+		#cv2.putText(img,str(int(heights[0][0])),(60,60), font, 1,(255,255,255),1,cv2.CV_AA)
 	try:
 		cv2.imshow("hi",img) #This is mainly to let my borked python3 install, which can't display images, work.
 		if(camera): #If we're doing video
