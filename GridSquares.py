@@ -39,6 +39,10 @@ class gridSquare:
 		inliers,rvec,tvec=cv2.solvePnP(objectpoints,tempcorners,CameraMatrix,distortionCoefficients) #Where the magic happens. Turns gets vector from camera to center of square
 		inliers,rvec2,tvec2=cv2.solvePnP(secondObjectCorners,tempcorners,CameraMatrix,distortionCoefficients)
 		inliers,rvec3,tvec3=cv2.solvePnP(thirdObjectCorners,tempcorners,CameraMatrix,distortionCoefficients)
+		#print rvec
+		#print rvec2
+		#print rvec3
+
 		#print(distance(vecsub(tvec2,tvec)),distance(vecsub(tvec3,tvec)))
 		line1=scalarmult(vecsub(tvec2,tvec),1/distance(vecsub(tvec2,tvec)))
 		line2=scalarmult(vecsub(tvec3,tvec),1/distance(vecsub(tvec3,tvec)))
@@ -54,6 +58,8 @@ class gridSquare:
 
 #		self.location[1]=sign(temp,self.side2)*distance(temp)
 #		self.location[2]=sign(temp,self.normal)*distance(temp)
+		#print self.location
+		#print ""
 	def compareSquareNormals(self,square):
 		tempcross=cross(self.normal,square.normal)
 		edge=0
@@ -126,10 +132,16 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 		#print cv2.contourArea(contours[contour])
 		epsilon = 0.01*cv2.arcLength(newsquare.contour,True) #Set up for simplifying contours
 		newsquare.corners=cv2.approxPolyDP(newsquare.contour,epsilon,True) #Actually simplifying
-		
+		cv2.polylines(img,[newsquare.contour],True,(0,255,0)) #Draw it
 		if(len(newsquare.corners)==4): #If the simplified version has 4 sides
-			cv2.polylines(img,[newsquare.contour],True,(0,255,0)) #Draw it
 			squares.append(newsquare) #And mark it as a square
+		else:
+			newsquare.corners=cv2.convexHull(newsquare.contour)
+			newsquare.corners=cv2.approxPolyDP(newsquare.corners,epsilon,True) #Actually simplifying
+			if(len(newsquare.corners)==4):
+				print newsquare.contour
+				print len(newsquare.contour)
+				cv2.polylines(img,[newsquare.corners],True,(0,0,255)) #Draw it
 		contour+=1 #Iterate
 	#print(contour,len(squares)) #Print the # of squares found
 	#print(len(img),len(img[0]))
@@ -151,7 +163,7 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 		tvecindex=0
 		for square in [square for square in squares if square.score > scorethreshold]:
 
-			print(square.location)
+			#print(square.location)
 			height=abs(square.location[2])
 			#height=abs(dot(square.camvec,square.normal)/distance(square.normal))
 			averageheight+=height
@@ -164,16 +176,17 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 			y=int(y/4)
 			cv2.putText(img,str(int(height))+" "+str(int(square.score*100)),(x,y), font, 1,(255,255,255),1,cv2.LINE_AA)
 	
-			cv2.polylines(img,[square.corners],True,(255,0,0)) #Draw both squares
+			#cv2.polylines(img,[square.corners],True,(255,0,0)) #Draw both squares
 			tvecindex+=1
 		#print(len([square for square in squares if square.score > scorethreshold]))
 
 		if(tvecindex!=0):
 			averageheight=averageheight/tvecindex
 			heights[0]=[averageheight,scorethreshold/.95]
-			cv2.putText(img,str(int(averageheight)),(30,30), font, 1,(255,255,255),1,cv2.LINE_AA)
+			#cv2.putText(img,str(int(averageheight)),(30,30), font, 1,(255,255,255),1,cv2.LINE_AA)
 		else:
-			cv2.putText(img,"N/A",(30,30), font, 1,(255,255,255),1,cv2.LINE_AA)
+			pass
+			#cv2.putText(img,"N/A",(30,30), font, 1,(255,255,255),1,cv2.LINE_AA)
 	else:
 		cv2.putText(img,"N/A",(30,30), font, 1,(255,255,255),1,cv2.LINE_AA)
 	print("") #Divider line
@@ -181,7 +194,7 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 	totalscore=weights[0]*heights[0][1]+weights[1]*heights[1][1]+weights[2]*heights[2][1]
 	if(totalscore!=0):
 		heights[0]=[(weights[0]*heights[0][1]*heights[0][0]+weights[1]*heights[1][1]*heights[1][0]+weights[2]*heights[2][1]*heights[2][0])/totalscore,totalscore]
-		cv2.putText(img,str(int(heights[0][0])),(60,60), font, 1,(255,255,255),1,cv2.LINE_AA)
+		#cv2.putText(img,str(int(heights[0][0])),(60,60), font, 1,(255,255,255),1,cv2.LINE_AA)
 	try:
 		cv2.imshow("hi",img) #This is mainly to let my borked python3 install, which can't display images, work.
 		if(camera): #If we're doing video
