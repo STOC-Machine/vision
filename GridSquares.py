@@ -66,7 +66,7 @@ class gridSquare:
 		tempcross=cross(self.normal,square.normal)
 		edge=0
 		for point in square.corners:
-			if(point[0][0]==0 or point[0][0]==len(img[0])-1 or point[0][1]==0 or point[0][1]==len(img)-1):
+			if(point[0][0]<2 or point[0][0]>len(img[0])-3 or point[0][1]<2 or point[0][1]>len(img)-3):
 				edge=1
 		if(not edge):
 			#score+=abs(dot(cross1,cross2))
@@ -150,19 +150,18 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 			area = cv2.contourArea(cv2.convexHull(newsquare.contour))			
 			#print(maxcross,area)
 			ratio = round(float(area)/maxcross,1)
-			print(area,ratio)
+			#print(area,ratio)
 			if 4.0 >= ratio > 2.9:
 				pass
 			elif 2.9 >= ratio > 1.3:
 				pass
 			elif 1.3 >= ratio > 0.6:
-				pass
+				newsquare.corners=cv2.convexHull(newsquare.contour)
+				newsquare.corners=cv2.approxPolyDP(newsquare.corners,epsilon,True) #Actually simplifying
+				if(len(newsquare.corners)==4):
+					squares.append(newsquare)
 			else:
 				pass
-
-
-			newsquare.corners=cv2.convexHull(newsquare.contour)
-			newsquare.corners=cv2.approxPolyDP(newsquare.corners,epsilon,True) #Actually simplifying
 			if(len(newsquare.corners)==4):
 				#print newsquare.contour
 				#print len(newsquare.contour)
@@ -172,6 +171,7 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 	#print(len(img),len(img[0]))
 	for square in squares:
 		square.getPosStats()
+		cv2.polylines(img,[square.corners],True,(255,0,255))
 	index1=0 #Iterator1
 	#print("")
 	while(index1<len(squares)): #Loop through squares
