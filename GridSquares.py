@@ -66,7 +66,7 @@ class gridSquare:
 		tempcross=cross(self.normal,square.normal)
 		edge=0
 		for point in square.corners:
-			if(point[0][0]==0 or point[0][0]==len(img[0])-1 or point[0][1]==0 or point[0][1]==len(img)-1):
+			if(point[0][0]<1 or point[0][0]>len(img[0])-2 or point[0][1]<1 or point[0][1]>len(img)-2):
 				edge=1
 		if(not edge):
 			#score+=abs(dot(cross1,cross2))
