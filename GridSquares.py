@@ -21,6 +21,8 @@ def vectordiv(a,b):
 	return((a[0]/b[0]+a[1]/b[1]+a[2]/b[2])/3)
 def cross(a,b): #a cross b
 	return([a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]])
+def cross2D(a, b): #a cross b
+	return(a[0]*b[1]-a[1]*b[0])
 def proj(a,b): #Projection of b onto unit vector a
 	return(scalarmult(a,dot(a,b)/(distance(a)*distance(a))))
 
@@ -127,7 +129,7 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 	contours.sort(key=cv2.contourArea,reverse=True) #Sort them by area. Trust me. Saves time because there are a ton of contours with 0 area.
 	contour=0 #Iterator
 	squares=[] #List of squares to add to.
-	while(contour<len(contours) and cv2.contourArea(contours[contour])>100): #Loop until area is too small or all are done
+	while(contour<len(contours) and cv2.contourArea(contours[contour])>1000): #Loop until area is too small or all are done
 		newsquare=gridSquare(contours[contour])
 		#print cv2.contourArea(contours[contour])
 		epsilon = 0.01*cv2.arcLength(newsquare.contour,True) #Set up for simplifying contours
@@ -136,11 +138,34 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 		if(len(newsquare.corners)==4): #If the simplified version has 4 sides
 			squares.append(newsquare) #And mark it as a square
 		else:
+			tempcorners = newsquare.corners		
+			tempvecs = []			
+			for indx in range(len(tempcorners)): #create a list of vectors
+				newvec = [tempcorners[indx][0][0] - tempcorners[indx - 1][0][0], tempcorners[indx][0][1] - tempcorners[indx - 1][0][1]]
+				tempvecs.append(newvec)
+			maxcross = 0			
+			for indx in range(len(tempvecs)):
+				tempcross = cross2D(tempvecs[indx],tempvecs[indx-1])
+				maxcross = max(maxcross, tempcross)
+			area = cv2.contourArea(cv2.convexHull(newsquare.contour))			
+			#print(maxcross,area)
+			ratio = round(float(area)/maxcross,1)
+			print(area,ratio)
+			if 4.0 >= ratio > 2.9:
+				pass
+			elif 2.9 >= ratio > 1.3:
+				pass
+			elif 1.3 >= ratio > 0.6:
+				pass
+			else:
+				pass
+
+
 			newsquare.corners=cv2.convexHull(newsquare.contour)
 			newsquare.corners=cv2.approxPolyDP(newsquare.corners,epsilon,True) #Actually simplifying
 			if(len(newsquare.corners)==4):
-				print newsquare.contour
-				print len(newsquare.contour)
+				#print newsquare.contour
+				#print len(newsquare.contour)
 				cv2.polylines(img,[newsquare.corners],True,(0,0,255)) #Draw it
 		contour+=1 #Iterate
 	#print(contour,len(squares)) #Print the # of squares found
