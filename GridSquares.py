@@ -159,7 +159,15 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 				newsquare.corners=cv2.convexHull(newsquare.contour)
 				newsquare.corners=cv2.approxPolyDP(newsquare.corners,epsilon,True) #Actually simplifying
 				if(len(newsquare.corners)==4):
+					#Case 1
 					squares.append(newsquare)
+				elif(len(newsquare.corners)==5):
+					#Case 2
+					cv2.polylines(img,[newsquare.corners],True,(255,0,0))
+					temprect = cv2.minAreaRect(newsquare.corners)
+					#tempbox = cv2.boxPoints(temprect) #Perhaps this would work with a newer version of OpenCv
+					print(box, "This is box")
+					print(newsquare.corners)
 			else:
 				pass
 			if(len(newsquare.corners)==4):
