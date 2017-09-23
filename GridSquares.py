@@ -26,6 +26,31 @@ def cross2D(a, b): #a cross b
 def proj(a,b): #Projection of b onto unit vector a
 	return(scalarmult(a,dot(a,b)/(distance(a)*distance(a))))
 
+def computeFrameSquares(image):
+	red,green,blue=cv2.split(img) #split the image into components.
+	testgray=np.minimum(blue,red) #Create a new image with the minimum of b and r channels
+	testgray=np.minimum(testgray,green) #Create a new image with minimum of all three channels
+	out,ret=cv2.threshold(testgray,120,255,cv2.THRESH_BINARY) #Run a threshold to find only white lines. Interestingly, ret is the image here.
+	try:
+		cv2.imshow('Threshold',ret) #Display the thresholded image
+	except:
+		#exit=1 #If that's not working, your screwed. Just give up now.
+		pass
+	dump,contours,hierarchy=cv2.findContours(ret,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE) #Get contours in image in a list.
+	contours.sort(key=cv2.contourArea,reverse=True) #Sort them by area. Trust me. Saves time because there are a ton of contours with 0 area.
+	contour=0 #Iterator
+	squares=[] #List of squares to add to.
+	while(contour<len(contours) and cv2.contourArea(contours[contour])>1000): #Loop until area is too small or all are done
+		newsquare=gridSquare(contours[contour])
+		#print cv2.contourArea(contours[contour])
+		epsilon = 0.01*cv2.arcLength(newsquare.contour,True) #Set up for simplifying contours
+		newsquare.corners=cv2.approxPolyDP(newsquare.contour,epsilon,True) #Actually simplifying
+		if(len(newsquare.corners)==4): #If the simplified version has 4 sides
+			squares.append(newsquare) #And mark it as a square
+		contour+=1 #Iterate
+	return squares
+
+
 class gridSquare:
 	camvec=[] #Vector pointing to camera, in camera coords
 	side1=[] #Unit vector from center to side1 of square, in camera coords
@@ -115,7 +140,8 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 	if(img==None): #Do make sure that there's an image
 		break
 	outimg=np.copy(img) #Copy the image. Not really needed, but can be nice long term
-
+	squares=computeFrameSquares(img)
+	"""
 	red,green,blue=cv2.split(img) #split the image into components.
 	testgray=np.minimum(blue,red) #Create a new image with the minimum of b and r channels
 	testgray=np.minimum(testgray,green) #Create a new image with minimum of all three channels
@@ -134,7 +160,7 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 		#print cv2.contourArea(contours[contour])
 		epsilon = 0.01*cv2.arcLength(newsquare.contour,True) #Set up for simplifying contours
 		newsquare.corners=cv2.approxPolyDP(newsquare.contour,epsilon,True) #Actually simplifying
-		cv2.polylines(img,[newsquare.contour],True,(0,255,0)) #Draw it
+		#cv2.polylines(img,[newsquare.contour],True,(0,255,0)) #Draw it
 		if(len(newsquare.corners)==4): #If the simplified version has 4 sides
 			squares.append(newsquare) #And mark it as a square
 		else:
@@ -150,30 +176,70 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 			area = cv2.contourArea(cv2.convexHull(newsquare.contour))			
 			#print(maxcross,area)
 			ratio = round(float(area)/maxcross,1)
-			print(area,ratio)
-			if 4.0 >= ratio > 2.9:
-				pass
+			#print(area,ratio)
+			newsquare.corners=cv2.approxPolyDP(newsquare.contour,epsilon/10,True) #Actually simplifying
+			if 4.0 >= ratio > 1.3:
+				cv2.polylines(img,[newsquare.corners],True,(0,0,255)) #Draw it
+				#print newsquare.corners
+				indx1=0
+				while(indx1<len(newsquare.corners)):
+					
+					indx2=0
+					a=[newsquare.corners[indx1][0][0],newsquare.corners[indx1][0][1],0]
+					a1=[newsquare.corners[indx1-1][0][0],newsquare.corners[indx1-1][0][1],0]
+					b=[]
+					sort=[]
+					while(indx2<len(newsquare.corners) and indx2!=indx1):
+						b=[newsquare.corners[indx2][0][0],newsquare.corners[indx2][0][1],0]
+						sort.append([math.asin(1-pow(dot(vecsub(b,a),vecsub(a1,a))/(distance(vecsub(b,a))*distance(vecsub(a1,a))),2)),indx2])
+						indx2+=1
+					sort.sort()
+					#print sort
+					i=-1
+					count=0
+					while(i>-len(sort)):
+						#sort[i].append(sort[i][0]-sort[i-1][0])
+						if(abs(sort[i][0])<0.01 and abs(sort[i][1]-indx1)>1):
+							print sort[i],sort[i-1]
+							
+							b=[newsquare.corners[sort[i][1]][0][0],newsquare.corners[sort[i][1]][0][1],0]
+							c=[newsquare.corners[sort[i-1][1]][0][0],newsquare.corners[sort[i-1][1]][0][1],0]
+							cv2.line(img,tuple(b[:2]),(int(a[0]),int(a[1])),(255,255,255))
+							cv2.line(img,tuple(c[:2]),(int(a[0]),int(a[1])),(255,255,255))
+							i=-len(sort)
+						i-=1
+					indx1+=1
 			elif 2.9 >= ratio > 1.3:
+				#print newsquare.corners
 				pass
 			elif 1.3 >= ratio > 0.6:
-				pass
+				contour+=1
+				continue
+				newsquare.corners=cv2.convexHull(newsquare.contour)
+ 				newsquare.corners=cv2.approxPolyDP(newsquare.corners,epsilon,True) #Actually simplifying
+ 				if(len(newsquare.corners)==4):
+					#Case 1
+ 					squares.append(newsquare)
+				elif(len(newsquare.corners)==5):
+					#Case 2
+					cv2.polylines(img,[newsquare.corners],True,(255,0,0))
+					temprect = cv2.minAreaRect(newsquare.corners)
+					tempbox = cv2.boxPoints(temprect) #Perhaps this would work with a newer version of OpenCv
+					tempbox = np.int0(tempbox)
+					cv2.drawContours(img,[tempbox],0,(0,255,255),2)
+					#print(box, "This is box")
+					#print(newsquare.corners)
 			else:
 				pass
-
-
-			newsquare.corners=cv2.convexHull(newsquare.contour)
-			newsquare.corners=cv2.approxPolyDP(newsquare.corners,epsilon,True) #Actually simplifying
-			if(len(newsquare.corners)==4):
-				#print newsquare.contour
-				#print len(newsquare.contour)
-				cv2.polylines(img,[newsquare.corners],True,(0,0,255)) #Draw it
 		contour+=1 #Iterate
+"""
 	#print(contour,len(squares)) #Print the # of squares found
 	#print(len(img),len(img[0]))
 	for square in squares:
 		square.getPosStats()
 	index1=0 #Iterator1
 	#print("")
+
 	while(index1<len(squares)): #Loop through squares
 		index2=0 #Iterator2 starts where 1 hasn't reached
 		score=0
@@ -201,7 +267,7 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 			y=int(y/4)
 			cv2.putText(img,str(int(height))+" "+str(int(square.score*100)),(x,y), font, 1,(255,255,255),1,cv2.LINE_AA)
 	
-			#cv2.polylines(img,[square.corners],True,(255,0,0)) #Draw both squares
+			cv2.polylines(img,[square.corners],True,(255,0,0)) #Draw both squares
 			tvecindex+=1
 		#print(len([square for square in squares if square.score > scorethreshold]))
 
