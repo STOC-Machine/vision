@@ -140,8 +140,8 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 	if(img==None): #Do make sure that there's an image
 		break
 	outimg=np.copy(img) #Copy the image. Not really needed, but can be nice long term
-	squares=computeFrameSquares(img)
-	"""
+	#squares=computeFrameSquares(img)
+	
 	red,green,blue=cv2.split(img) #split the image into components.
 	testgray=np.minimum(blue,red) #Create a new image with the minimum of b and r channels
 	testgray=np.minimum(testgray,green) #Create a new image with minimum of all three channels
@@ -160,7 +160,7 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 		#print cv2.contourArea(contours[contour])
 		epsilon = 0.01*cv2.arcLength(newsquare.contour,True) #Set up for simplifying contours
 		newsquare.corners=cv2.approxPolyDP(newsquare.contour,epsilon,True) #Actually simplifying
-		#cv2.polylines(img,[newsquare.contour],True,(0,255,0)) #Draw it
+		cv2.polylines(img,[newsquare.contour],True,(0,255,0)) #Draw it
 		if(len(newsquare.corners)==4): #If the simplified version has 4 sides
 			squares.append(newsquare) #And mark it as a square
 		else:
@@ -200,12 +200,12 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 					while(i>-len(sort)):
 						#sort[i].append(sort[i][0]-sort[i-1][0])
 						if(abs(sort[i][0])<0.01 and abs(sort[i][1]-indx1)>1):
-							print sort[i],sort[i-1]
+							print(sort[i],sort[i-1])
 							
 							b=[newsquare.corners[sort[i][1]][0][0],newsquare.corners[sort[i][1]][0][1],0]
 							c=[newsquare.corners[sort[i-1][1]][0][0],newsquare.corners[sort[i-1][1]][0][1],0]
-							cv2.line(img,tuple(b[:2]),(int(a[0]),int(a[1])),(255,255,255))
-							cv2.line(img,tuple(c[:2]),(int(a[0]),int(a[1])),(255,255,255))
+							#cv2.line(img,tuple(b[:2]),(int(a[0]),int(a[1])),(255,255,255))
+							#cv2.line(img,tuple(c[:2]),(int(a[0]),int(a[1])),(255,255,255))
 							i=-len(sort)
 						i-=1
 					indx1+=1
@@ -216,10 +216,10 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 				contour+=1
 				continue
 				newsquare.corners=cv2.convexHull(newsquare.contour)
- 				newsquare.corners=cv2.approxPolyDP(newsquare.corners,epsilon,True) #Actually simplifying
- 				if(len(newsquare.corners)==4):
+				newsquare.corners=cv2.approxPolyDP(newsquare.corners,epsilon,True) #Actually simplifying
+				if(len(newsquare.corners)==4):
 					#Case 1
- 					squares.append(newsquare)
+					squares.append(newsquare)
 				elif(len(newsquare.corners)==5):
 					#Case 2
 					cv2.polylines(img,[newsquare.corners],True,(255,0,0))
@@ -232,7 +232,7 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 			else:
 				pass
 		contour+=1 #Iterate
-"""
+
 	#print(contour,len(squares)) #Print the # of squares found
 	#print(len(img),len(img[0]))
 	for square in squares:
