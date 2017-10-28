@@ -100,17 +100,15 @@ class gridSquare:
 	def compareSquareNormals(self,square,dim):
 		tempcross=cross(self.normal,square.normal)
 		edge=0
+		print dim
 		for point in square.corners:
-			if(point[0][0]<1 or point[0][0]>dim[0]-2 or point[0][1]<1 or point[0][1]>dim[1]-2):
+			if(point[0][0]<1 or point[0][0]>dim[1]-2 or point[0][1]<1 or point[0][1]>dim[0]-2):
 				edge=1
 		if(not edge):
 			#score+=abs(dot(cross1,cross2))
 			self.score+=1-abs(distance(tempcross)/(distance(square.normal)*distance(self.normal)))
 	def __init__(self,contour):
 		self.contour=contour
-		
-
-
 
 def getSquareStats(img,CameraMatrix,distortionCoefficients,BestCamRotGuess):
 	squarelength=28.5 #Needs to be a float, in cm of real length of the squares
