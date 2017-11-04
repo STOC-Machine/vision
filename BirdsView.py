@@ -3,9 +3,10 @@ import sys
 import numpy as np
 import glob
 import GridSquares as grid
-
-CameraMatrix=np.array([[811.75165344, 0., 317.03949866],[0., 811.51686214, 247.65442989],[0., 0., 1.]]) #Values found in CalibrationValues.txt
-distortionCoefficients=np.array([-3.00959078e-02, -2.22274786e-01, -5.31335928e-04, -3.74777371e-04, 1.80515550e+00]) #Values found in Calibration Values.txt
+#CameraMatrix=np.array([[376.60631072, 0., 334.94985263], [0., 376.37590044, 245.47987032], [0., 0., 1.]])
+CameraMatrix=np.array([[811.75165344, 0., 317.03949866],[0., 811.51686214, 247.65442989],[0., 0., 1.]]) # Logitech values found in CalibrationValues.txt
+#distortionCoefficients=np.array([-3.30211385e-01, 1.58724644e-01, -1.87573090e-04, 4.55691783e-04, -4.98096761e-02])
+distortionCoefficients=np.array([-3.00959078e-02, -2.22274786e-01, -5.31335928e-04, -3.74777371e-04, 1.80515550e+00]) #Logitech values found in Calibration Values.txt
 distortionCoefficients=distortionCoefficients.reshape(5,1) #Needs to be this shape
 
 	
@@ -34,15 +35,14 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 		break
 	if(img==None): #Do make sure that there's an image
 		break
+	img=cv2.undistort(img,CameraMatrix,distortionCoefficients)
 	outimg=np.copy(img) #Copy the image. Not really needed, but can be nice long term
 	#print img.shape
 	birdsview=np.zeros([1000,1000,3],dtype=np.uint8)
 	cv2.circle(birdsview,(int(birdsview.shape[0]/2),int(birdsview.shape[1]/2)),5,(255,255,0),-1)
-
-	squares,BestCamRotGuess=grid.getSquareStats(img,CameraMatrix,distortionCoefficients,BestCamRotGuess) #It's a magic function! Yay!
+	squares,BestCamRotGuess=grid.getSquareStats(img,CameraMatrix,np.array([[]]),BestCamRotGuess) #It's a magic function! Yay!
 	#print(contour,len(squares)) #Print the # of squares found
 	#print(len(img),len(img[0]))
-	print squares
 	gluedSquareCorners=[]
 	gluedSquareCoords=[]
 	squarelength=28.5
@@ -88,14 +88,14 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 		gluedSquareCoords=np.asarray(gluedSquareCoords).astype(float)
 		gluedSquareCorners.reshape(len(gluedSquareCorners),2,1)
 		gluedSquareCoords.reshape(len(gluedSquareCoords),3,1)
-		for square2 in squares:
-			print square2.corners
-		for square2 in squares:
-			print grid.vecsub(square2.location,squares[0].location)
-		print gluedSquareCorners
-		print gluedSquareCoords
-		inliers,fullrvec,fulltvec=cv2.solvePnP(gluedSquareCoords,gluedSquareCorners,CameraMatrix,distortionCoefficients) #Where the magic happens. Turns gets vector from camera to center of square
-		print fulltvec,fullrvec
+		#for square2 in squares:
+			#print square2.corners
+		#for square2 in squares:
+			#print grid.vecsub(square2.location,squares[0].location)
+		#print gluedSquareCorners
+		#print gluedSquareCoords
+		inliers,fullrvec,fulltvec=cv2.solvePnP(gluedSquareCoords,gluedSquareCorners,CameraMatrix,distortionCoefficients,squares[0].rvec,squares[0].tvec,True) #Where the magic happens. Turns gets vector from camera to center of square
+		#print fulltvec,fullrvec
 		rotMatrix=cv2.Rodrigues(fullrvec)
 		camerapos=np.multiply(cv2.transpose(rotMatrix[0]), -1).dot(fulltvec)
 		print camerapos
