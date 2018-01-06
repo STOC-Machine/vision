@@ -7,12 +7,18 @@ import math
 
 def dot(a,b):#a.b
 	return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]
+def dot2(a,b):
+	return a[0]*b[0]+a[1]*b[1]
 def vecsub(a,b):#a-b
 	return [a[0]-b[0],a[1]-b[1],a[2]-b[2]]
+def vecsub2(a,b):
+	return [a[0]-b[0],a[1]-b[1]]
 def vecadd(a,b): #a+b
 	return [a[0]+b[0],a[1]+b[1],a[2]+b[2]]
 def distance(a): #magnitude a
 	return math.sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2])
+def distance2(a): #magnitude a
+	return math.sqrt(a[0]*a[0]+a[1]*a[1])
 def scalarmult(a,b): #Multiply vector a by number b
 	return([a[0]*b,a[1]*b,a[2]*b])
 def sign(a,b): #Are a and b in the same direction or opposite?
@@ -81,6 +87,10 @@ class gridSquare:
 		tempy=proj(self.side2,self.camvec)
 		tempz=proj(self.normal,self.camvec)
 		self.location=[sign(tempx,self.side1)*distance(tempx),sign(tempy,self.side2)*distance(tempy),sign(tempz,self.normal)*distance(tempz)]
+		#print ("CONTOUR")
+		#print (self.contour)
+		#print ("CORNERS")
+		#print (self.corners)
 		#self.location[0]=sign(temp,self.side1)*distance(temp)
 
 #		self.location[1]=sign(temp,self.side2)*distance(temp)
@@ -162,7 +172,73 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 		newsquare.corners=cv2.approxPolyDP(newsquare.contour,epsilon,True) #Actually simplifying
 		cv2.polylines(img,[newsquare.contour],True,(0,255,0)) #Draw it
 		if(len(newsquare.corners)==4): #If the simplified version has 4 sides
-			squares.append(newsquare) #And mark it as a square
+			squares.append(newsquare)
+			 #And mark it as a square
+		elif(len(newsquare.corners)>=4):
+			#one=(vecsub2(newsquare.corners[0],newsquare.corners[1]))
+			#two=(vecsub2(newsquare.corners[2],newsquare.corners[3]))
+			#angle=dot2(one, two)/(distance2(one)*distance2(two))
+			#print("angle:")
+			#print(angle)
+			print("corner")
+			print(newsquare.corners[0][0])
+			print(newsquare.corners[1][0])
+			sides=[]
+			i=0
+			while i<len(newsquare.corners):
+				j=i+1
+				while j<len(newsquare.corners):
+					sides.append(vecsub2(newsquare.corners[i][0],newsquare.corners[j][0]))
+					j=j+1
+				i=i+1
+			print("side")
+			print(sides[0])
+			ppairs=[]
+			i=0
+			while i<len(sides):
+				j=i+1
+				while j<len(sides):
+					dotP =abs(dot2(sides[i],sides[j]))
+					if(dotP >=1):
+						pair=[sides[i],sides[j]]
+						ppairs.append(pair)
+						z=2
+						#print(pair)
+					j=j+1
+				i=i+1
+			i=0
+			print("ppair")
+			print(ppairs[0])
+			
+			#while i<len(ppairs):
+				#print("pair")
+				#print(ppairs[i])
+				#i=i+1
+			while i<len(ppairs):
+				j=i+1 
+				while j<len(ppairs):
+					if((ppairs[i][0]in(ppairs[j])) and (ppairs[i][1]in(ppairs[j]))):
+						z=0
+						print("A good pair")
+						newsquare.corners=ppairs[i]
+						squares.append(newsquare)
+						#print(ppairs[j])
+					j=j+1 
+				i=i+1
+
+
+
+			#	one=(vecsub2(newsquare.corners[i],newsquare.corners[i+1]))
+			#	
+			#	j=0
+			#	while j<len(newsquare.corners):
+			#		two=(vecsub2(newsquare.corners[j],newsquare.corners[j+1]))
+			#		angle=dot2(one, two)/(distance2(one)*distance2(two))
+			#		if( angle >=0 & angle <= 5):
+			#			cv2.polylines(img[newsquare.corners[i],newsquare.corners[i+2],newsquare.corners[j],newsquare.corners[j+1]],True,(255,255,255))
+			#		j=j+1
+			#	i=i+1
+			#cv2.polylines(img,[newsquare.corners],True,(255,255,255))
 		else:
 			tempcorners = newsquare.corners		
 			tempvecs = []			
@@ -200,12 +276,12 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 					while(i>-len(sort)):
 						#sort[i].append(sort[i][0]-sort[i-1][0])
 						if(abs(sort[i][0])<0.01 and abs(sort[i][1]-indx1)>1):
-							print(sort[i],sort[i-1])
+							#print(sort[i],sort[i-1]) KELSEY COMMENTED
 							
 							b=[newsquare.corners[sort[i][1]][0][0],newsquare.corners[sort[i][1]][0][1],0]
 							c=[newsquare.corners[sort[i-1][1]][0][0],newsquare.corners[sort[i-1][1]][0][1],0]
-							#cv2.line(img,tuple(b[:2]),(int(a[0]),int(a[1])),(255,255,255))
-							#cv2.line(img,tuple(c[:2]),(int(a[0]),int(a[1])),(255,255,255))
+							#cv2.line(img,tuple(b[:2]),(int(a[0]),int(a[1])),(255,255,255)) #white
+							#cv2.line(img,tuple(c[:2]),(int(a[0]),int(a[1])),(255,255,255)) #white 
 							i=-len(sort)
 						i-=1
 					indx1+=1

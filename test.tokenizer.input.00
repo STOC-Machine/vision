@@ -1,0 +1,6 @@
+(define primes
+  (lambda ()
+    (let ((llst (lazy-infinite-range 2)))
+      (if (null? llst)
+          '()
+          (sieve llst)))))
