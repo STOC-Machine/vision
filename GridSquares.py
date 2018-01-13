@@ -65,7 +65,7 @@ class gridSquare:
 
 	score=0 #How good is this square. See compare square normals for more
 	corners=[] #Image coordinates of square corners
-	contour=None #Unsimplified image coordinates of square corners
+	contour=None #Unsimplified image coordinates of square corners, open cv
 	location=[] #Square location in camera coordinates
 	def getPosStats(self):
 		tempcorners=self.corners.reshape(4,2,1).astype(float) #The points need to be floats, and in a specific shape
@@ -199,7 +199,8 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 				j=i+1
 				while j<len(sides):
 					dotP =abs(dot2(sides[i],sides[j]))
-					if(dotP >=1):
+					angle = dotP/(distance2(sides[i])*distance2(sides[j]))
+					if((angle >=.9)  and (angle <=1.1)):
 						pair=[sides[i],sides[j]]
 						ppairs.append(pair)
 						z=2
