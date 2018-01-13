@@ -33,7 +33,7 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 		ret, img = camera.read() #Read from webcam
 	else: #If things are weird, just quit
 		break
-	if(img==None): #Do make sure that there's an image
+	if(type(img) is not np.ndarray): #Do make sure that there's an image
 		break
 	img=cv2.undistort(img,CameraMatrix,distortionCoefficients)
 	outimg=np.copy(img) #Copy the image. Not really needed, but can be nice long term
@@ -81,6 +81,8 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 		#print square.location
 		#print square.side1
 		cv2.drawContours(img,square.contour,True,(0,255,0))
+
+
 		
 		#print(len([square for square in squares if square.score > scorethreshold]))
 	if(len(squares)>0):
@@ -98,8 +100,8 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 		#print fulltvec,fullrvec
 		rotMatrix=cv2.Rodrigues(fullrvec)
 		camerapos=np.multiply(cv2.transpose(rotMatrix[0]), -1).dot(fulltvec)
-		print camerapos
-		print squares[0].location
+		print(camerapos)
+		print(squares[0].location)
 		camToGridTransform=np.concatenate((cv2.transpose(rotMatrix[0]),camerapos),axis=1)
 		gridToCamTransform=np.linalg.inv(np.concatenate((camToGridTransform,np.array([[0,0,0,1]])),axis=0))
 		camRot=list(camToGridTransform.dot(np.array([0,0,1,0])))
