@@ -21,10 +21,10 @@ def color_detect(image, hsv_lower_val, hsv_upper_val):
 
     merge_lines(lines)
     
-    for line in lines:
-        x1, y1, x2, y2 = line[0]
-        cv2.line(image, (x1,y1), (x2,y2), (0, 0, 0), 2)
-    cv2.imwrite('houghlines.jpg', image)
+#    for line in lines:
+#        x1, y1, x2, y2 = line[0]
+#        cv2.line(image, (x1,y1), (x2,y2), (0, 0, 0), 2)
+#    cv2.imwrite('houghlines.jpg', image)
 
     return lines
 

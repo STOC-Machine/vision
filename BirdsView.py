@@ -4,17 +4,22 @@ import numpy as np
 import glob
 import GridSquares as grid
 import color_detect as cd
+
+#Alex's sysout is broken, so he uses a log file instead of print()
+import logging
+logging.basicConfig(filename='birdsview.log', level=logging.DEBUG)
+
 #CameraMatrix=np.array([[376.60631072, 0., 334.94985263], [0., 376.37590044, 245.47987032], [0., 0., 1.]])
 CameraMatrix=np.array([[811.75165344, 0., 317.03949866],[0., 811.51686214, 247.65442989],[0., 0., 1.]]) # Logitech values found in CalibrationValues.txt
 #distortionCoefficients=np.array([-3.30211385e-01, 1.58724644e-01, -1.87573090e-04, 4.55691783e-04, -4.98096761e-02])
 distortionCoefficients=np.array([-3.00959078e-02, -2.22274786e-01, -5.31335928e-04, -3.74777371e-04, 1.80515550e+00]) #Logitech values found in Calibration Values.txt
 distortionCoefficients=distortionCoefficients.reshape(5,1) #Needs to be this shape
 
-	
+
 font = cv2.FONT_HERSHEY_SIMPLEX #Used for drawing text.
 camera=0 #Will be used to test camera loading
 if(len(sys.argv)<2): #If no arguments passed
-	camera=cv2.VideoCapture(1) #Load the webcam
+	camera=cv2.VideoCapture(0) #Load the webcam
 	filenames=[] #Don't give any filenames
 else:
 	filenames=glob.glob(sys.argv[1]) #Get the filenames from the command
@@ -38,7 +43,7 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 		break
 	img=cv2.undistort(img,CameraMatrix,distortionCoefficients)
 	outimg=np.copy(img) #Copy the image. Not really needed, but can be nice long term
-	#cd.color_detect(img,40,80)
+	logging.info(cd.color_detect(img,40,80))
 	#print img.shape
 	birdsview=np.zeros([1000,1000,3],dtype=np.uint8)
 	cv2.circle(birdsview,(int(birdsview.shape[0]/2),int(birdsview.shape[1]/2)),5,(255,255,0),-1)
