@@ -30,10 +30,6 @@ def proj(a,b): #Projection of b onto unit vector a
 def denumpify(a): #Numpy data types were annoying me. This should be removed eventually.
 	return [[a[0][0][0],a[0][0][1]],[a[1][0][0],a[1][0][1]],[a[2][0][0],a[2][0][1]],[a[3][0][0],a[3][0][1]]]
 
-#Alex's sysout is broken, so he uses a log file instead of print()
-import logging
-logging.basicConfig(filename='gridsquare.log', level=logging.DEBUG)
-
 # Compute Frame Squares:
 # Takes an image, and returns a list of all "squares" in the image
 #
@@ -55,7 +51,6 @@ def computeFrameSquares(img):
 		newsquare=gridSquare(contours[contour])
 		epsilon = 0.01*cv2.arcLength(newsquare.contour,True) #Set up for simplifying contours
 		newsquare.corners=cv2.approxPolyDP(newsquare.contour,epsilon,True) #Actually simplifying
-		logging.info(newsquare.corners)
 		if(len(newsquare.corners)==4): #If the simplified version has 4 sides
 			squares.append(newsquare) #Mark it as a square
 		contour+=1 #Iterate
@@ -71,7 +66,6 @@ class gridSquare:
 	corners=[] #Image coordinates of square corners
 	contour=None #Unsimplified image coordinates of square corners
 	location=[] #Square location in camera coordinates
-	colorLineEndpoints=[] #If the square has a colored edge then this is non empty and contains the corners that are a part of the colored line
 
 	# Get Position Stats
 	# Takes the square's corners found in the image, corresponding 3d coordinates, and intrinsic camera information
