@@ -17,3 +17,4 @@ $ sudo apt-get update
 $ sudo apt-get upgrade
 $ sudo apt-get -y install git python3-pip libatlas-base-dev liblapack-dev libgstreamer1.0-0 libgtk-3-0
 $ pip3 install dronekit opencv-python
+
