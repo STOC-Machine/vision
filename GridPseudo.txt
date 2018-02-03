@@ -1,0 +1,9 @@
+Objective:
+	Create a Grid object with the drone's current position stored in it
+	Update the current position according to where the grid sqaures are
+	Works with David's code
+	Can be run on pi
+	Grid should be persistent
+	Grid should be easily updatable
+	Should store physical details of the actual grid
+	
