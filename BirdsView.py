@@ -98,8 +98,8 @@ while(len(filenames)>0 or not exit): #If there are more files, or we haven't qui
 		#print fulltvec,fullrvec
 		rotMatrix=cv2.Rodrigues(fullrvec)
 		camerapos=np.multiply(cv2.transpose(rotMatrix[0]), -1).dot(fulltvec)
-		print camerapos
-		print squares[0].location
+		print(camerapos)
+		print(squares[0].location)
 		camToGridTransform=np.concatenate((cv2.transpose(rotMatrix[0]),camerapos),axis=1)
 		gridToCamTransform=np.linalg.inv(np.concatenate((camToGridTransform,np.array([[0,0,0,1]])),axis=0))
 		camRot=list(camToGridTransform.dot(np.array([0,0,1,0])))
