@@ -17,7 +17,7 @@ def makeHoughLines(img):
   red,green,blue=cv2.split(img) #split the image into components.
   testgray=np.minimum(blue,red) #Create a new image with the minimum of b and r channels
   testgray=np.minimum(testgray,green) #Create a new image with minimum of all three channels
-  ret,out=cv2.threshold(testgray,120,255,cv2.THRESH_BINARY)
+  ret,out=cv2.threshold(testgray,120,255,cv2.THRESH_BINARY_INV)
   # print(out[0][0])
   #try:
   #print(ret)
@@ -25,17 +25,7 @@ def makeHoughLines(img):
   j=0
   z=0
   #cv2.imshow('Threshold',out) #Display the thresholded image
-  while i<len(out):
-    while j<len(out[i]):
-      if(out[i][j] == 0):
-        out[i][j]=255
-      elif(out[i][j]== 255):
-        out[i][j]=0
-      else:
-        out[i][j]=255
-      print(out[i][j])
-      j=j+1
-    i=i+1
+
   cv2.imshow('Threshold',out) #Display the thresholded image
 
 
@@ -43,8 +33,10 @@ def makeHoughLines(img):
   # cv2.destroyAllWindows()
   #except:
   #  pass
-  lines = cv2.HoughLinesP(out, 1, np.pi/180, 875, 10, 120)
+  lines = cv2.HoughLinesP(out, 1, np.pi/180, 100, 100, 103)
   #lines = cv2.cornerHarris(out, out, ksize, k[, dst[, borderType]])
+  if lines == None:
+    return []
   for line in lines:
           x1, y1, x2, y2 = line[0]
           cv2.line(out, (x1,y1), (x2,y2), 160, 2)
