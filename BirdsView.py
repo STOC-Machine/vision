@@ -3,7 +3,7 @@ import sys
 import numpy as np
 import glob
 import GridSquares as grid
-import color_detect as cd
+import ColorDetect as cd
 
 #Alex's sysout is broken, so he uses a log file instead of print()
 import logging
