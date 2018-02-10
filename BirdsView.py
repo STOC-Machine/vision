@@ -2,7 +2,6 @@ import cv2
 import sys
 import numpy as np
 import glob
-import GridSquares as grid
 
 FONT = cv2.FONT_HERSHEY_SIMPLEX  # Used for drawing text.
 
@@ -200,4 +199,3 @@ if __name__ == '__main__':
         run_from_camera(cv2.VideoCapture(0))
     else:
         run_from_files(sys.argv[1])
->>>>>>> master

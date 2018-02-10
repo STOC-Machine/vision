@@ -1,13 +1,54 @@
+import numpy as np
+
+import color_detect as cd
 import GridSquares as gs
-import ColorDetect as cd
 
 
-class SquaresGrid:
-	def update_position(self, img):
-		camToGridTransform=np.concatenate((cv2.transpose(rotMatrix[0]),camerapos),axis=1)
-		gridToCamTransform=np.linalg.inv(np.concatenate((camToGridTransform,np.array([[0,0,0,1]])),axis=0))
-		camRot=list(camToGridTransform.dot(np.array([0,0,1,0])))
-		tempcamline2=grid.vecadd(grid.scalarmult(camRot,50),[birdsview.shape[0]/2,birdsview.shape[0]/2,0])
-		cv2.line(birdsview,(int(tempcamline2[0]),int(tempcamline2[1])),(int(birdsview.shape[0]/2),int(birdsview.shape[1]/2)),(255,0,255),1,cv2.LINE_AA)
+def find_color_line(img):
+	"""
+	:param img:
+	"""
+
+	red_values = (0, 20)
+	green_values = (40, 80)
+
+	red_lines = cd.color_detect(img, red_values[0], red_values[1])
+	green_lines = cd.color_detect(img, green_values[0], red_values[1])
+
+	if type(red_lines) is np.ndarray and red_lines.all() is not None:
+		return red_lines, "r"
+	elif type(red_lines) is np.ndarray and red_lines.all() is not None:
+		return green_lines, "g"
+	return None
 
 
+def find_edge(img):
+	return None
+
+
+def initialize(img):
+	"""
+	:param img:
+	"""
+
+	color_lines, color = find_color_line(img)
+	edges = find_edge(img)
+
+	if edges.length == 2:
+		corner_initialize(img)
+	elif color is not None:
+		color_edge_initialize(img)
+	elif edges is not None:
+		non_color_edge_initialize(img)
+
+
+def corner_initialize(img):
+	return None
+
+
+def color_edge_initialize(img):
+	return None
+
+
+def non_color_edge_initialize(img):
+	return None
