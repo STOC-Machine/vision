@@ -31,7 +31,7 @@ def find_grid(img, cam_rot_guess):
                (255, 255, 0), -1)
     squares, cam_rot_guess = grid.get_square_stats(img, camera_matrix,
                                                    np.array([[]]),
-                                                   cam_rot_guess)  # It's a magic function! Yay!
+                                                   cam_rot_guess)
 
     # print(contour,len(squares)) #Print the # of squares found
     # print(len(img),len(img[0]))

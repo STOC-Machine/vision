@@ -172,6 +172,6 @@ def get_square_stats(img, CameraMatrix, distortionCoefficients, BestCamRotGuess)
     for square in squares:
         if(BestCamRotGuess==0): #If we don't have a guess, use the highest score square
             BestCamRotGuess=squares[0].camRot
-        square.alignSquares(BestCamRotGuess,CameraMatrix,distortionCoefficients,objectpoints)
+        square.align_squares(BestCamRotGuess,CameraMatrix,distortionCoefficients,objectpoints)
     return squares,BestCamRotGuess
 
