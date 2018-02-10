@@ -45,20 +45,20 @@ def find_grid(img, cam_rot_guess):
                           [square_length / 2, square_length / 2, 0],
                           [square_length / 2, -square_length / 2, 0]]
     if cam_rot_guess != 0:
-        temp_cam_line = grid.vecadd(grid.scalarmult(cam_rot_guess, 50),
-                                    [birds_view.shape[0] / 2,
+        temp_cam_line = grid.vec_add(grid.scalar_mult(cam_rot_guess, 50),
+                                     [birds_view.shape[0] / 2,
                                      birds_view.shape[0] / 2, 0])
         cv2.line(birds_view, (int(temp_cam_line[0]), int(temp_cam_line[1])),
                  (int(birds_view.shape[0] / 2), int(birds_view.shape[1] / 2)),
                  (0, 0, 255), 1, cv2.LINE_AA)
     for square in squares:
-        temp_vec = grid.vecsub(square.location, squares[0].location)
+        temp_vec = grid.vec_sub(square.location, squares[0].location)
 
         for edge_index in range(4):
-            temp_draw_vec = grid.vecadd(square.location,
-                                        base_object_points[edge_index])
-            temp_draw_vec2 = grid.vecadd(square.location,
-                                         base_object_points[edge_index - 1])
+            temp_draw_vec = grid.vec_add(square.location,
+                                         base_object_points[edge_index])
+            temp_draw_vec2 = grid.vec_add(square.location,
+                                          base_object_points[edge_index - 1])
             cv2.line(birds_view, (
             int(temp_draw_vec[0] + birds_view.shape[0] / 2),
             int(temp_draw_vec[1] + birds_view.shape[1] / 2)),
@@ -74,8 +74,8 @@ def find_grid(img, cam_rot_guess):
 
         for i in base_object_points:
             glued_square_coords.append(
-                [[grid.vecadd(i, temp_vec)[0]], [grid.vecadd(i, temp_vec)[1]],
-                 [grid.vecadd(i, temp_vec)[2]]])
+                [[grid.vec_add(i, temp_vec)[0]], [grid.vec_add(i, temp_vec)[1]],
+                 [grid.vec_add(i, temp_vec)[2]]])
 
         for i in grid.denumpify(square.corners):
             glued_square_corners.append([[i[0]], [i[1]]])
@@ -134,8 +134,8 @@ def find_grid(img, cam_rot_guess):
             np.concatenate((cam_to_grid_transform, np.array([[0, 0, 0, 1]])),
                            axis=0))
         cam_rot = list(cam_to_grid_transform.dot(np.array([0, 0, 1, 0])))
-        temp_cam_line2 = grid.vecadd(grid.scalarmult(cam_rot, 50),
-                                     [birds_view.shape[0] / 2,
+        temp_cam_line2 = grid.vec_add(grid.scalar_mult(cam_rot, 50),
+                                      [birds_view.shape[0] / 2,
                                       birds_view.shape[0] / 2, 0])
         cv2.line(birds_view, (int(temp_cam_line2[0]), int(temp_cam_line2[1])),
                  (int(birds_view.shape[0] / 2), int(birds_view.shape[1] / 2)),
@@ -166,7 +166,7 @@ def run_from_camera(camera):
         cv2.imshow("Birds eye view", birds_view)
 
         if len(squares) > 0:
-            cam_rot_guess = squares[0].camRot
+            cam_rot_guess = squares[0].cam_rot
 
 
 def run_from_files(files):
