@@ -1,0 +1,20 @@
+Pi setup:
+1. Flash Raspbian Lite onto a micro sd card.
+2. Connect it to a monitor and keyboard (and wifi dongle if usin a PI 2)
+3. Power on the Pi and use user=pi, pass=raspberry to log in
+4. Run sudo raspi-config
+	- Change user password to stocmachine
+	- Under network options:
+		- Change Hostname to [something]berrypi
+		- Under wifi, enter SSID=test_network and pass=testpassword
+	- Under interfacing options, enable SSH
+	- Select finish and reboot the pi
+5. Connect your laptop to test_network and $ ping [the something you picked]berrypi.local
+6. You should get a response. ctl-c to end ping and $ ssh pi@[something]berrypi.local 
+7. Now that you're on the pi, install required libraries:
+
+$ sudo apt-get update
+$ sudo apt-get upgrade
+$ sudo apt-get -y install git python3-pip libatlas-base-dev liblapack-dev libgstreamer1.0-0 libgtk-3-0
+$ pip3 install dronekit opencv-python
+

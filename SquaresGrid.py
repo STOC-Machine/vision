@@ -1,20 +1,55 @@
-import cv2 
-import numpy as np 
-import math 
-import GridSquares as grid 
-import color_detect as cd 
-#finding position on the grid
-def initialize_pos(img)
-#initial position must
-#be on the green line 
-#be the corner square, aka on the edge 
-#if the conditions are met define location of the drone as (0,0)
-	color_lines = color_detect(img, 83, 151)
-	if(color_lines == 0):#if no lines found
-		return "not at the start"
-	if(color_lines>1):
-	#error?
-	if(color_lines == 1):
-		#if(we see an edge)
-			#if(we see a corner)
-			#this spot is (0,0)
+import numpy as np
+
+import color_detect as cd
+import GridSquares as gs
+
+
+def find_color_line(img):
+	"""
+	:param img:
+	"""
+
+	red_values = (0, 20)
+	green_values = (40, 80)
+
+	red_lines = cd.color_detect(img, red_values[0], red_values[1])
+	green_lines = cd.color_detect(img, green_values[0], red_values[1])
+
+	if type(red_lines) is np.ndarray and red_lines.all() is not None:
+		return red_lines, "r"
+	elif type(red_lines) is np.ndarray and red_lines.all() is not None:
+		return green_lines, "g"
+	return None
+
+
+def find_edge(img):
+	return None
+
+
+def initialize(img):
+	"""
+	:param img:
+	"""
+
+	color_lines, color = find_color_line(img)
+	edges = find_edge(img)
+
+	if edges.length == 2:
+		corner_initialize(img)
+	elif color is not None:
+		color_edge_initialize(img)
+	elif edges is not None:
+		non_color_edge_initialize(img)
+
+
+def corner_initialize(img):
+	return None
+
+
+def color_edge_initialize(img):
+	return None
+
+
+def non_color_edge_initialize(img):
+	return None
+>>>>>>> 56173e1fcad6e00d22e217c81e186b6874aa22c7

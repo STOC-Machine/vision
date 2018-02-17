@@ -17,7 +17,7 @@ def color_detect(image, hsv_lower_val, hsv_upper_val):
 
     if(type(lines) is not np.ndarray or lines.all() == None):
         print('No such lines')
-        return 0
+        return None
 
     merge_lines(lines)
     
