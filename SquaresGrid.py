@@ -100,4 +100,3 @@ def update_position(previous_squares, current_squares, previous_position):
 # return vector distance between centers of squares
 def compare_two_squares(s_1, s_2):
 	return [1,1]
-
