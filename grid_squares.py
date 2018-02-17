@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 from operator import attrgetter
-from vector import dot, distance
+from vector import dot, distance, cross
 
 # Length of the grid squares in cm
 SQUARE_LENGTH = 28.5
