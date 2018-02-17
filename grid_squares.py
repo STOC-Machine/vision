@@ -1,58 +1,13 @@
 import numpy as np
 import cv2
 from operator import attrgetter
-import math
+from vector import dot, distance
 
 # Length of the grid squares in cm
 SQUARE_LENGTH = 28.5
 
 # Width of gaps between grid squares
 SQUARE_GAP = 2.5
-
-
-# Vector functions. Probably should be replaced with numpy versions
-def dot(a, b):#a.b
-    return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]
-
-
-def vec_sub(a, b):#a-b
-    return [a[0]-b[0],a[1]-b[1],a[2]-b[2]]
-
-
-def vec_add(a, b): #a+b
-    return [a[0]+b[0],a[1]+b[1],a[2]+b[2]]
-
-
-def distance(a): #magnitude a
-    return math.sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2])
-
-
-def scalar_mult(a, b): #Multiply vector a by number b
-    return([a[0]*b,a[1]*b,a[2]*b])
-
-
-def sign(a,b): #Are a and b in the same direction or opposite?
-    return(dot(a,b)/abs(dot(a,b)))
-
-
-def vec_div(a, b):
-    return((a[0]/b[0]+a[1]/b[1]+a[2]/b[2])/3)
-
-
-def cross(a, b): #a cross b
-    return([a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]])
-
-
-def cross_2d(a, b): #a cross b
-    return(a[0]*b[1]-a[1]*b[0])
-
-
-def proj(a,b): #Projection of b onto unit vector a
-    return(scalar_mult(a, dot(a, b) / (distance(a) * distance(a))))
-
-
-def denumpify(a): #Numpy data types were annoying me. This should be removed eventually.
-    return [[a[0][0][0],a[0][0][1]],[a[1][0][0],a[1][0][1]],[a[2][0][0],a[2][0][1]],[a[3][0][0],a[3][0][1]]]
 
 
 def compute_frame_squares(img):
@@ -131,9 +86,9 @@ class GridSquare:
         grid_to_cam_transform = np.linalg.inv(np.concatenate((cam_to_grid_transform, np.array([[0, 0, 0, 1]])), axis=0))
 
         self.cam_rot = list(cam_to_grid_transform.dot(np.array([0, 0, 1, 0])))
-        self.normal=grid_to_cam_transform.dot(np.array([0, 0, 1, 0]))
-        self.cam_pos=cam_pos
-        self.location=[cam_pos[0][0],cam_pos[1][0],cam_pos[2][0]]
+        self.normal = grid_to_cam_transform.dot(np.array([0, 0, 1, 0]))
+        self.cam_pos = cam_pos
+        self.location = [cam_pos[0][0],cam_pos[1][0],cam_pos[2][0]]
 
     def align_squares(self, guess, cam_matrix, distortion_coefficients, object_points):
         """

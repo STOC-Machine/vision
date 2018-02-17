@@ -2,7 +2,8 @@ import cv2
 import sys
 import numpy as np
 import glob
-import GridSquares as grid
+import grid_squares as grid
+import vector as vec
 
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -49,7 +50,7 @@ def find_grid(img, cam_rot_guess):
                           [square_length / 2, -square_length / 2, 0]]
 
     for square in squares:
-        temp_vec = grid.vec_sub(square.location, squares[0].location)
+        temp_vec = vec.sub(square.location, squares[0].location)
 
         temp_vec[0] = (square_length + square_gap) * round(
             temp_vec[0] / (square_length + square_gap), 0)
@@ -59,10 +60,10 @@ def find_grid(img, cam_rot_guess):
 
         for i in base_object_points:
             glued_square_coords.append(
-                [[grid.vec_add(i, temp_vec)[0]], [grid.vec_add(i, temp_vec)[1]],
-                 [grid.vec_add(i, temp_vec)[2]]])
+                [[vec.add(i, temp_vec)[0]], [vec.add(i, temp_vec)[1]],
+                 [vec.add(i, temp_vec)[2]]])
 
-        for i in grid.denumpify(square.corners):
+        for i in vec.denumpify(square.corners):
             glued_square_corners.append([[i[0]], [i[1]]])
 
     if len(squares) > 0:
@@ -106,7 +107,7 @@ def display_grid(img, squares, cam_rot, base_object_points):
                (255, 255, 0), -1)
 
     if cam_rot != 0:
-        cam_line = grid.vec_add(grid.scalar_mult(cam_rot, 50),
+        cam_line = vec.add(vec.scalar_mult(cam_rot, 50),
                                 [birds_view.shape[0] / 2,
                                  birds_view.shape[0] / 2, 0])
 
@@ -116,9 +117,9 @@ def display_grid(img, squares, cam_rot, base_object_points):
 
     for square in squares:
         for edge_index in range(4):
-            temp_draw_vec = grid.vec_add(square.location,
+            temp_draw_vec = vec.add(square.location,
                                          base_object_points[edge_index])
-            temp_draw_vec2 = grid.vec_add(square.location,
+            temp_draw_vec2 = vec.add(square.location,
                                           base_object_points[edge_index - 1])
 
             cv2.line(birds_view, (int(temp_draw_vec[0] + birds_view.shape[0] / 2),
@@ -138,9 +139,9 @@ def display_grid(img, squares, cam_rot, base_object_points):
         cv2.drawContours(img, square.contour, True, (0, 255, 0))
 
     if len(squares) > 0:
-        cam_line2 = grid.vec_add(grid.scalar_mult(cam_rot, 50),
-                                 [birds_view.shape[0] / 2,
-                                  birds_view.shape[0] / 2, 0])
+        cam_line2 = vec.add(vec.scalar_mult(cam_rot, 50),
+                            [birds_view.shape[0] / 2,
+                             birds_view.shape[0] / 2, 0])
 
         cv2.line(birds_view, (int(cam_line2[0]), int(cam_line2[1])),
                  (int(birds_view.shape[0] / 2), int(birds_view.shape[1] / 2)),
