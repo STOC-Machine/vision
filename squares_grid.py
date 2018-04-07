@@ -54,48 +54,86 @@ def non_color_edge_initialize(img):
 	return None
 
 def update_position(previous_squares, current_squares, previous_position):
+	return None
 
-	#Delete all of this. Switch to minimizing cost function, where cost function is the distance between squares
+def frame_difference(previous_squares, current_squares):
+	# Matching always has to go from less squares to more
+	if len(previous_squares) <= len(current_squares):
+		domain = previous_squares
+		codomain = current_squares
+		flipped = False
+	else:
+		domain = current_squares
+		codomain = previous_squares
+		flipped = True
 
-	#I first go through all vectors between squares and find the minumum from each of the previous squares
-	min_distances_vectors = []
+	# Used to name each square to keep track of which is which
+	ps_name = 0
+	cs_name = 0
 
-	for ps in previous_squares:
-		min_dist_vec = 0
-		min_cs = None
+	matching_distances = {}
+	final_matching = {}
 
-		#I am assuming square does not have the same distance from 2 previous squares
-		for cs in current_squares:
-			dist_vector = compare_two_squares(ps, cs)
-			min_temp = min(min_dist, np.linalg.norm(dist_vector))
+	# This double for loop finds distance between every square in domain and every square in codomain
+	for ps in domain:
+		ps_matching = [:]
+		ps.name = str(ps_name)
 
-			if not min_temp == np.linalg.norm(min_dist_vec):
-				min_dist_vec = dist_vector
-				min_cs = cs
+		first_match = None
 
-		min_distances_vectors.append(min_dist_vec)
+		for cs in codomain:
+			if not cs.name:
+				cs.name = str(cs_name)
+				cs_name += 1
 
-	#If there are different numbers of squares previous_squares and current_squares, I have to get rid of all the extra
-	difference = min(0, previous_squares.length - current_squares.length)
+			dist = np.linalg.norm(vec_distance(ps, cs))
+			ps_matching[cs.name] = dist
 
-	for i in range(difference):
-		max_item = None
-		for dist_tuple in min_distances_vectors:
-			if max_item is None or np.linalg.norm(dist_tuple[0]) > np.linalg.norm(max_item[0]):
-				max_item = dist_tuple
+			if first_match == None or first_match[1] > dist:
+				first_match = (cs.name, dist)
 
-		if max_item is not None:
-			min_distances_vectors.remove(max_item)
+		matching_distances[ps.name] = ps_matching
+		final_matching[ps.name] = first_match
+		ps_name += 1
 
-	avg_dist_vector = []
-	for dist_tuple in min_distances_vectors:
-		for i in range(avg_dist_vector.length):
-			avg_dist_vector[i] += dist_tuple[i]
+	overlaps = None
+	overlap = None
 
-	for i in range(avg_dist_vector.length):
-		avg_dist_vector[i] /= min_distances_vectors.length
+	for i in Range(len(final_matching)):
+		for j in Range(i+1, len(final_matching)):
+			if final_matching[i][0] == final_matching[j][0]:
+				overlap = True
+				overlaps = (final_matching[i], final_matching[j])
 
-	return avg_dist_vector
+	if overlaps == None:
+		overlaps = False
+
+	while overlaps:
+		overlapping_match = final_matching[overlap[0]]
+
+		dist_list_1 = matching_distances[overlap[0]]
+		dist_list_2 = matching_distances[overlap[1]]
+
+		next_best_1 = None
+		next_best_2 = None
+
+		for cs in codomain:
+
+
+			 
+
+
+
+	for ps in matching_distances:
+		ps_list = matching_distances[ps]
+		match = None
+		for cs in ps_list:
+			if match = None or ps_list[cs] < match[1]:
+				match = (cs, ps_list[cs])
+
+
+
+
 
 # return vector distance between centers of squares
 def vec_distance(square_1, square_2):

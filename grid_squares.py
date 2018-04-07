@@ -58,6 +58,7 @@ class GridSquare:
     corners = [] # Image coordinates of square corners
     contour = None # Unsimplified image coordinates of square corners
     location = [] # Square location in camera coordinates
+    name = "" # Used only for matching algorithm
 
     def __init__(self, contour):
         self.contour = contour
