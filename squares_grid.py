@@ -98,5 +98,20 @@ def update_position(previous_squares, current_squares, previous_position):
 	return avg_dist_vector
 
 # return vector distance between centers of squares
-def compare_two_squares(s_1, s_2):
-	return [1,1]
+def vec_distance(square_1, square_2):
+	corner_1 = get_bottom_left_corner(square_1)
+	corner_2 = get_bottom_left_corner(square_2)
+
+	return corner_2[0] - corner_1[0], corner_2[1] - corner_1[1]
+
+def get_bottom_left_corner(square):
+	lowest_corner = None
+
+	for corner in square.corners:
+		if lowest_corner == None or corner[1] < lowest_corner[1]:
+			lowest_corner = corner
+		elif corner[1] == lowest_corner[1]:
+			if corner[0] < lowest_corner[0]:
+				lowest_corner = corner
+
+	return lowest_corner
