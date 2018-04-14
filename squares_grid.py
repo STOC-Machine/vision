@@ -54,9 +54,41 @@ def non_color_edge_initialize(img):
 	return None
 
 def update_position(previous_squares, current_squares, previous_position):
-	return None
+	matchings, flipped = frame_matching(previous_squares, current_squares)
+	matchings = remove_bad_matchings(matchings)
 
-def frame_difference(previous_squares, current_squares):
+	if not flipped:
+		vector_dist = vector_dist_between_frames(previous_squares, current_squares, matchings)
+	else:
+		vector_dist = vector_dist_between_frames(current_squares, previous_squares, matchings)
+
+	return previous_position + vector_dist
+
+def vector_dist_between_frames(previous_squares, current_squares, matchings):
+	vector_sum = [0,0]
+	sum_divisor = 0
+	
+	for ps in previous_squares:
+		matched_square_name = matchings[ps.name]
+
+		if matched_square_name == None:
+			continue
+
+		for cs in current_squares:
+			if matched_square_name == cs.name:
+				vector_sum = vector_sum + vec_distance(ps, cs)
+				sum_divisor = sum_divisor + 1
+
+	return (1/sum_divisor) * vector_sum
+
+def remove_bad_matchings(matchings):
+	for key in matchings:
+		if matchings[key] >= 0.1:
+			del matchings[key]
+
+	return matchings
+
+def frame_matching(previous_squares, current_squares):
 	# Matching always has to go from less squares to more
 	if len(previous_squares) <= len(current_squares):
 		domain = previous_squares
@@ -111,7 +143,7 @@ def frame_difference(previous_squares, current_squares):
 
 		next_best = None
 		for key in target_distance_dictionary:
-			if next_best = None or next_best[1] > target_distance_dictionary[key]:
+			if next_best == None or next_best[1] > target_distance_dictionary[key]:
 				next_best = (key, target_distance_dictionary[key])
 
 		if next_best = None:
@@ -121,7 +153,7 @@ def frame_difference(previous_squares, current_squares):
 
 		overlap, overlap_target = check_for_overlap(final_matching)
 
-	return final_matching
+	return final_matching, flipped
 
 
 def check_for_overlap(matching_dictionary):
@@ -137,7 +169,7 @@ def check_for_overlap(matching_dictionary):
 				overlaps = True
 				if conflict_1[1] > conflict_2[1]:
 					overlap_target = conflict_1[0]
-				else
+				else:
 					overlap_target = conflict_2[0]
 
 	if overlaps == None:
