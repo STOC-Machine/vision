@@ -68,6 +68,7 @@ def frame_difference(previous_squares, current_squares):
 		flipped = True
 
 	# Used to name each square to keep track of which is which
+	# Each name is a number value in a string
 	ps_name = 0
 	cs_name = 0
 
@@ -79,6 +80,8 @@ def frame_difference(previous_squares, current_squares):
 		ps_matching = [:]
 		ps.name = str(ps_name)
 
+		# First match is the smallest distance (optimal) without considering overlap
+		# First match is a tuple that has the (name, distance)
 		first_match = None
 
 		for cs in codomain:
@@ -86,6 +89,7 @@ def frame_difference(previous_squares, current_squares):
 				cs.name = str(cs_name)
 				cs_name += 1
 
+			# Find the distance & save it to dictionary
 			dist = np.linalg.norm(vec_distance(ps, cs))
 			ps_matching[cs.name] = dist
 
@@ -96,44 +100,50 @@ def frame_difference(previous_squares, current_squares):
 		final_matching[ps.name] = first_match
 		ps_name += 1
 
-	overlaps = None
-	overlap = None
+	# Boolean whether there are overlaps in final_matching and names of square in the domain that will be replaced
+	overlaps, overlap_target = check_for_overlap(final_matching)
 
-	for i in Range(len(final_matching)):
-		for j in Range(i+1, len(final_matching)):
-			if final_matching[i][0] == final_matching[j][0]:
-				overlap = True
-				overlaps = (final_matching[i], final_matching[j])
+	while overlaps:
+		overlap_target_current_match = final_matching[overlap_target]
+		del matching_distances[overlap_target][overlap_target_current_match]
+
+		target_distance_dictionary = matching_distances[overlap_target]
+
+		next_best = None
+		for key in target_distance_dictionary:
+			if next_best = None or next_best[1] > target_distance_dictionary[key]:
+				next_best = (key, target_distance_dictionary[key])
+
+		if next_best = None:
+			del final_matching[overlap_target]
+		else:
+			final_matching[overlap_target] = next_best
+
+		overlap, overlap_target = check_for_overlap(final_matching)
+
+	return final_matching
+
+
+def check_for_overlap(matching_dictionary):
+	overlaps = None
+	overlap_target = None
+
+	for i in Range(len(matching_dictionary)):
+		for j in Range(i+1, len(matching_dictionary)):
+			if matching_dictionary[i][0] == matching_dictionary[j][0]:
+				conflict_1 = matching_dictionary[i]
+				conflict_2 = matching_dictionary[j]
+
+				overlaps = True
+				if conflict_1[1] > conflict_2[1]:
+					overlap_target = conflict_1[0]
+				else
+					overlap_target = conflict_2[0]
 
 	if overlaps == None:
 		overlaps = False
 
-	while overlaps:
-		overlapping_match = final_matching[overlap[0]]
-
-		dist_list_1 = matching_distances[overlap[0]]
-		dist_list_2 = matching_distances[overlap[1]]
-
-		next_best_1 = None
-		next_best_2 = None
-
-		for cs in codomain:
-
-
-			 
-
-
-
-	for ps in matching_distances:
-		ps_list = matching_distances[ps]
-		match = None
-		for cs in ps_list:
-			if match = None or ps_list[cs] < match[1]:
-				match = (cs, ps_list[cs])
-
-
-
-
+	return overlaps, overlap_target
 
 # return vector distance between centers of squares
 def vec_distance(square_1, square_2):
